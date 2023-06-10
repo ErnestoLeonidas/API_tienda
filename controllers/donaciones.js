@@ -6,10 +6,11 @@ const app = express();
 module.exports.buscar_todo = app.get('/', (request, response) => {
   const sql = `
     SELECT
-      id_rol,
-      nombre,
-      estado
-    FROM Roles
+      id_donacion,
+      fecha_donacion,
+      monto,
+      id_usuario
+    FROM Donaciones
   `;
   connection.query(sql, (error, results) => {
     if (error) throw error;
@@ -24,10 +25,11 @@ module.exports.buscar_todo = app.get('/', (request, response) => {
 module.exports.buscar_activos = app.get('/activos', (request, response) => {
   const sql = `
     SELECT
-      id_rol,
-      nombre,
-      estado
-    FROM Roles
+      id_donacion,
+      fecha_donacion,
+      monto,
+      id_usuario
+    FROM Donaciones
     WHERE estado = '1'
   `;
   connection.query(sql, (error, results) => {
@@ -41,16 +43,17 @@ module.exports.buscar_activos = app.get('/activos', (request, response) => {
 });
 
 module.exports.buscar = app.get('/:id', (request, response) => {
-  const id_rol = request.params.id;
+  const id_donacion = request.params.id;
   const sql = `
     SELECT
-      id_rol,
-      nombre,
-      estado
-    FROM Roles
-    WHERE id_rol = ?
+      id_donacion,
+      fecha_donacion,
+      monto,
+      id_usuario
+    FROM Donaciones
+    WHERE id_donacion = ?
   `;
-  connection.query(sql, id_rol, (error, results) => {
+  connection.query(sql, id_donacion, (error, results) => {
     if (error) throw error;
     if (results.length > 0) {
       response.status(200).send(results[0]);
@@ -61,49 +64,50 @@ module.exports.buscar = app.get('/:id', (request, response) => {
 });
 
 module.exports.actualizar = app.patch('/', (request, response) => {
-  const { id_rol, nombre, estado } = request.body;
+  const { id_donacion, fecha_donacion, monto, id_usuario } = request.body;
 
   const sql = `
-    UPDATE Roles
-    SET nombre = ?,
-      estado = ?
-    WHERE id_rol = ?
+    UPDATE Donaciones
+    SET fecha_donacion = ?,
+      monto = ?,
+      id_usuario = ?
+    WHERE id_donacion = ?
   `;
 
-  const values = [nombre, estado, id_rol];
+  const values = [fecha_donacion, monto, id_usuario, id_donacion];
 
   connection.query(sql, values, (error, results) => {
     if (error) throw error;
-    response.send(`Rol con id ${id_rol} actualizado correctamente`);
+    response.send(`Donación con id ${id_donacion} actualizada correctamente`);
   });
 });
 
 module.exports.agregar = app.post('/', (request, response) => {
-  const { nombre} = request.body;
+  const { fecha_donacion, monto, id_usuario } = request.body;
 
   const sql = `
-    INSERT INTO Roles (nombre)
-    VALUES (?)
+    INSERT INTO Donaciones (fecha_donacion, monto, id_usuario)
+    VALUES (?, ?, ?)
   `;
 
-  const values = [nombre];
+  const values = [fecha_donacion, monto, id_usuario];
 
   connection.query(sql, values, (error, results) => {
     if (error) throw error;
-    response.status(200).send(`Rol registrado correctamente con id ${results.insertId}`);
+    response.status(200).send(`Donación registrada correctamente con id ${results.insertId}`);
   });
 });
 
 module.exports.eliminar = app.delete('/:id', (request, response) => {
-  const id_rol = request.params.id;
+  const id_donacion = request.params.id;
 
-  const sql = "DELETE FROM Roles WHERE id_rol = ?";
-  connection.query(sql, id_rol, (error, results) => {
+  const sql = "DELETE FROM Donaciones WHERE id_donacion = ?";
+  connection.query(sql, id_donacion, (error, results) => {
     if (error) throw error;
     if (results.affectedRows > 0) {
-      response.status(200).send(`Rol con id ${id_rol} eliminado correctamente`);
+      response.status(200).send(`Donación con id ${id_donacion} eliminada correctamente`);
     } else {
-      response.status(404).send(`Rol con id ${id_rol} no encontrado`);
+      response.status(404).send(`Donación con id ${id_donacion} no encontrada`);
     }
   });
 });
