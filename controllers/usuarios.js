@@ -3,7 +3,7 @@ const express = require('express');
 const connection = require('../config/config');
 const app = express();
 
-module.exports.buscar_todo = app.get('/', (request, response) => {  
+module.exports.buscar_todo = app.get('/todos', (request, response) => {  
     const sql = `
         SELECT
             id_usuario,
@@ -12,8 +12,9 @@ module.exports.buscar_todo = app.get('/', (request, response) => {
             ap_paterno,
             ap_materno,
             esta_suscrito,
-            id_rol
-        FROM Usuarios 
+            Roles.id_rol AS id_rol,
+            Roles.nombre as rol
+        FROM Usuarios JOIN Roles USING(id_rol)
         `;
     connection.query(sql, (error, results) => {
         if (error) throw error;
@@ -34,9 +35,11 @@ module.exports.buscar_activos = app.get('/', (request, response) => {
             ap_paterno,
             ap_materno,
             esta_suscrito,
-            id_rol
-        FROM Usuarios 
-        WHERE estado = 1
+            Roles.id_rol AS id_rol,
+            Roles.nombre as rol
+        FROM Usuarios JOIN Roles USING(id_rol)
+        WHERE Usuarios.estado = 1
+        ORDER BY id_usuario ASC
         `;
     connection.query(sql, (error, results) => {
         if (error) throw error;
@@ -72,7 +75,7 @@ module.exports.buscar = app.get('/:id', (request, response) => {
     });               
 });
 
-module.exports.actualizar = app.patch('/', (request, response) => {  
+module.exports.actualizar = app.put('/', (request, response) => {  
     const {
         id_usuario,
         rut,
